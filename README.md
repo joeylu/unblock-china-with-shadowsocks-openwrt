@@ -22,12 +22,12 @@
 相关的教程：https://gist.github.com/nathanielove/40c1dcac777e64ceeb63d8296d263d6d （虽然是Ubuntu的，但其实在树莓派上也大同小异）
 
 步骤：
-...
+```
     sudo apt-get update
     sudo apt-get install python3-pip
     sudo pip install shadowsocks    
     nano /etc/shadowsocks.json
-...
+```
 写一个配置的json文档
     {
        "server":"服务器公共IP",
