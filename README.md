@@ -147,4 +147,9 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 
 接上电源后，等一分钟，在浏览器上输入192.168.1.1，若能打开openwrt的管理界面，刷固件搞定！
 
-### 配置openwrt，安装shadowsocks客户端
+## 配置openwrt，安装shadowsocks客户端
+
+进入管理界面后先改密码
+然后菜单里点network > interface
+小米路由mini的话能看到WAN和LAN的选项，点edit完成WAN和LAN的设置，LAN这一块打开DHCP
+树莓派的话，根据你的usb wifi，点system > software 点update lists, 寻找并下载相对应的驱动，之后就能在network > interface里看到两个interface，按需求设置，我的是eth0作为连主路由的WAN口，wlan0作为LAN的wifi收发口。
