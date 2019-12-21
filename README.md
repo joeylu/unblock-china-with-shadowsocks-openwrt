@@ -151,5 +151,7 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 
 进入管理界面后先改密码
 然后菜单里点network > interface
+
 小米路由mini的话能看到WAN和LAN的选项，点edit完成WAN和LAN的设置，LAN这一块打开DHCP
-树莓派的话，根据你的usb wifi，点system > software 点update lists, 寻找并下载相对应的驱动，之后就能在network > interface里看到两个interface，按需求设置，我的是eth0作为连主路由的WAN口，wlan0作为LAN的wifi收发口。
+
+树莓派的话，你只能看到一个LAN选项，首先点edit，把一套你家网络环境的static IP，包括dns，此时也可以把主路由的IP也还原到你原来的环境了（我做这个步骤的时候，是用我PC直连树莓派设置后再移植到路由器那端的，所以直接wifi设置会不会出现问题不一定，不过就算变砖，重刷一遍diskImage就行了，也就一分钟的事）
