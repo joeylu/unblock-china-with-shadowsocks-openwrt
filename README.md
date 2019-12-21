@@ -84,6 +84,14 @@ https://shadowsocks.org/en/download/clients.html
 输入IP地址，端口，密码和加密方式，链接，通了的话就代表服务器正常运行了。
 
 ## 刷Openwrt固件
+
+* putty 或类似ssh软件
+* winscp 传输档案用
+* U盘
+* 大头针或牙签
+* Cat5 网线
+* Win32DiskImager （树莓派用）
+
 因为尝试了小米路由mini和树莓派2B，虽然基本上没太大区别，网上都搜得到，我还是分两个设备各自简要介绍下流程
 
 ### 小米路由mini （算是原生支持openwrt，推荐，便宜而且方便，但不适合进一步折腾）
@@ -97,9 +105,46 @@ https://www.shuyz.com/posts/unhappy-experience-with-miwifi-mini-ssh-access/
 去 http://www1.miwifi.com/miwifi_open.html 点击 “开启SSH工具”，这里有第二个坑，目前点击该链接，如果你在海外，你会得到一个出错页面。还记得之前设置好的Shadowsocks Server吗？先下载个客户端，全局代理，模拟当前设备在国内，然后再点那个链接，才会跳转出来。
 该页面会列出属于你的当前路由器列表，如果你不把新刷的路由器加进你的账户，你看不到该路由器在列表中，也就无法得到SSH秘钥的密码。
 该密码是每台路由器都不同的，不同路由器之间无法公用。
+另一个教程： https://www.jianshu.com/p/984d3c914e35
 写下密码，下载 miwifi_ssh.bin
 
 下一步我们需要把 miwifi_ssh.bin 写进U盘里，又有一个坑。
 如果你是Win 10，你会发现Format U盘时没有Fat32选项，只有exFat和NTFS，如果你用这两个format，刷ssh的时候你会看到路由器LED灯变红。
 所以你需要找一台Win7的电脑，或者下一个Fat32的format软件，不麻烦。
-Format U盘后，复制 miwifi_ssh.bin 到U盘，插进小米路由，把
+Format U盘后，复制 miwifi_ssh.bin 到U盘，插进小米路由，把电源先拔了，拿针顶住Reset按钮，插回电源，看到黄灯闪烁，放开reset按钮，过一分钟ssh就刷好了，然后用putty或你喜欢的ssh客户端连接，ssh的用户名是root，密码是123456
+
+然后去openwrt官网下载最新版的固件
+https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.06.5-ramips-mt7620-miwifi-mini-squashfs-sysupgrade.bin
+目前亲测18.06.5可用，以后新版本不兼容的话，刷这个版本配合shadowsocks-libev肯定不会有问题
+你也可以根据自己想要的版本下载，只要能找到mt7620的子文件夹和miwifi-mini那个bin文件即可
+
+另外，有不少教程建议小米路由刷openwrt前先刷breed，这样即使变砖也能救回，建议这么做，不过我嫌麻烦没做 /dodge
+
+最后把下载的openwrt 固件通过winscp上传到路由器上，假设上传路径和档案名为 /tmp/openwrt.bin
+输入
+```
+    mtd -r write /tmp/openwrt.bin firmware
+```
+如果出现Could not open mtd device: firmware，就改成
+```
+    mtd -r write /tmp/openwrt.bin OS1
+```
+相关教程： https://swsmile.info/2019/01/30/%E3%80%90Embeded-System%E3%80%91%E5%B0%8F%E7%B1%B3%E8%B7%AF%E7%94%B1%E5%99%A8mini%E5%88%B7OpenWRT/
+
+最后一步(很坑）
+刷完后你会发现路由器的LED灯疯了一般狂闪，还是鲜红鲜红的，输入预设的192.168.1.1也无法接入，感觉像变砖。
+其实不然，原因是当前版本的固件，预设不打开wifi和dhcp，另外mini的初始灯状态估计就是疯狂红
+
+解决方法是通过网线，直连你的电脑，把电脑网卡设置为 192.168.0.x, 网关为192.168.0.1
+然后浏览器里输入192.168.0.1 若能打开openwrt的管理界面，刷固件搞定！
+
+### 树莓派 （原生不支持openwrt，4和zero目前官网并不支持，不过安装方便，就是不知道我用的2B性能会不会有瓶颈）
+去官网下载固件 https://openwrt.org/toh/raspberry_pi_foundation/raspberry_pi
+找installation那个表，对应自己树莓派的版本，下载后在你的PC端，用Win32DiskImager把img写到sd卡上，再把sd卡插入树莓派，把树莓派用网线连接到主路由，插入usb电源
+
+和小米路由最后一步差不多，当前固件预设状态不打开wifi和dhcp，且ip地址是固定写死的192.168.1.1
+因此如果当前你家网络（主路由）net不是192.168.1.0/24的话，暂时先改一下，我把主路由临时改成了192.168.1.2
+
+接上电源后，等一分钟，在浏览器上输入192.168.1.1，若能打开openwrt的管理界面，刷固件搞定！
+
+### 配置openwrt，安装shadowsocks客户端
