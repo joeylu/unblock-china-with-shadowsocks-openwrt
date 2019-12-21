@@ -155,3 +155,25 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 小米路由mini的话能看到WAN和LAN的选项，点edit完成WAN和LAN的设置，LAN这一块打开DHCP
 
 树莓派的话，你只能看到一个LAN选项，首先点edit，把一套你家网络环境的static IP，包括dns，此时也可以把主路由的IP也还原到你原来的环境了（我做这个步骤的时候，是用我PC直连树莓派设置后再移植到路由器那端的，所以直接wifi设置会不会出现问题不一定，不过就算变砖，重刷一遍diskImage就行了，也就一分钟的事）
+
+接下来安装一些基础环境
+```
+    opkg update
+    opkg install wget ca-certificates ca-bundle
+    opkg install iptables-mod-tproxy
+    opkg install block-mount e2fsprogs kmod-fs-ext4 kmod-usb-ohci kmod-usb-storage kmod-usb2 kmod-usb3 
+    opkg install usbutils
+```
+树莓派的话也要安装一些wifi相关的组件
+```
+    opkg install wpad-mini
+    opkg install kmod-crypto-hash
+    opkg install kmod-lib-crc16
+```
+另外，我的树莓派2B上有一张usb的wifi卡，但上面没有任何标识，我也不清楚需要安装什么样的驱动，解决方法是把该usb卡插在pc端（我是win10），打开device manager，在network adapter里找到该网卡，右键，在detail里选hardware id，里面会出现一组数据，我的是 USB\VID_148F&PID_5370&REV_0101 I
+然后去google下这组数据，回馈给我的是Ralink Rt2870，对应openwrt 以下的驱动
+```
+    opkg install kmod-rt2800-lib kmod-rt2800-usb kmod-rt2x00-lib kmod-rt2x00-usb
+```
+
+### 重启
