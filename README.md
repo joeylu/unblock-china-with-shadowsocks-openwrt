@@ -29,6 +29,7 @@
     nano /etc/shadowsocks.json
 ```
 写一个配置的json文档
+```
     {
        "server":"服务器公共IP",
        "server_port":8888,
@@ -37,29 +38,42 @@
        "timeout":600,
        "method":"aes-256-cfb"
     }
+```
 local_port随便填
 password这段如果没有多人登陆需求，就保留目前设置，如果有，可以用port和密码来配对
+```
     "port_password": {
         "8888": "password1",
         "8000": "password2",
         "8383": "password3",
         "8384": "password4"
-    },
+    }
+```
 method这一段如果没有太大的加密需求，可以考虑采用其他方案，嫌麻烦就保留目前设置
 https://github.com/shadowsocks/luci-app-shadowsocks/wiki/Bandwidth-of-encrypt-method  （加密速度对比）
 启动
+```
     sudo ssserver -c /etc/shadowsocks.json -d start
+```
 停止
+```
     sudo ssserver -c /etc/shadowsocks.json -d stop
+```
 服务器重启后自动启动
+```
     nano /etc/rc.local
+```
 添加以下命令
+```
     /usr/bin/python /usr/local/bin/ssserver -c /etc/shadowsocks.json -d start
+```
     
 ### 服务器设置转发（小坑）
 以8888为服务器端口为例：
 首先服务器如果有内建防火墙，开启相关端口，比如在ubuntu里
+```
     sudo ufw allow 8888
+```
 其次如果你使用的是某云的ECS，腾讯也好华为也好阿里也好，基本上大同小异，在安全组里添加8888端口转发
 再次如果你是打算搞个树莓派在家里做测试，就在你的路由器上开启8888端口转发，树莓派的eth0需要设置一个static IP，这里我遇到一个小坑，家里的是光纤宽带，本身并不具有公共IP（估计整个大楼都共享一个公共IP），因此即使路由器转发了，但没半毛钱用，最后还是放弃。所以如果在家里架设，务必看一下主路由的DHCP获取的IP是private IP还是public，如果是10.0.xx或192.168.xx啥的，放弃吧。你没有可能让ISP在大楼的主路由上单独给你设置一个端口转发的。
  
