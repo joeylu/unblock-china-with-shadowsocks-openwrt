@@ -20,6 +20,7 @@
 总体来说这一步是最简单的，无脑操作，先把成就感拉出红线 ^^
 
 相关的教程：https://gist.github.com/nathanielove/40c1dcac777e64ceeb63d8296d263d6d （虽然是Ubuntu的，但其实在树莓派上也大同小异）
+另一个教程：https://www.reddit.com/r/China/comments/8hp0kr/shadowsocks_server_on_raspberry_pi/ （比较详细，不过使用的是script启动）
 
 步骤：
 ```
@@ -82,3 +83,23 @@ https://github.com/shadowsocks/luci-app-shadowsocks/wiki/Bandwidth-of-encrypt-me
 https://shadowsocks.org/en/download/clients.html
 输入IP地址，端口，密码和加密方式，链接，通了的话就代表服务器正常运行了。
 
+## 刷Openwrt固件
+因为尝试了小米路由mini和树莓派2B，虽然基本上没太大区别，网上都搜得到，我还是分两个设备各自简要介绍下流程
+
+### 小米路由mini （算是原生支持openwrt，推荐，便宜而且方便，但不适合进一步折腾）
+首先刷小米开发板固件（有坑）
+很多教程里都直接让你去官网下载开发板固件，其实有误，原因是这些教程都过期了，新的官方开发板固件里的ssh秘钥算法不匹配官网自己的ssh.bin，因此需要下载一个旧的开发板固件版本，我用的是0.436，据说0.8以内都可以，这里放一篇教程
+https://www.shuyz.com/posts/unhappy-experience-with-miwifi-mini-ssh-access/
+下载完开发板固件，电脑连上小米路由，在固件更新页面里上传开发板固件，直接在路由器界面里更新，很方便。
+更新，重启完，如果你没有小米账号，先去官网注册一个，并且下载miwifi的app，把你新刷的路由器加进你的账号里
+
+下一步我们要开通路由器的SSH功能
+去 http://www1.miwifi.com/miwifi_open.html 点击 “开启SSH工具”，这里有第二个坑，目前点击该链接，如果你在海外，你会得到一个出错页面。还记得之前设置好的Shadowsocks Server吗？先下载个客户端，全局代理，模拟当前设备在国内，然后再点那个链接，才会跳转出来。
+该页面会列出属于你的当前路由器列表，如果你不把新刷的路由器加进你的账户，你看不到该路由器在列表中，也就无法得到SSH秘钥的密码。
+该密码是每台路由器都不同的，不同路由器之间无法公用。
+写下密码，下载 miwifi_ssh.bin
+
+下一步我们需要把 miwifi_ssh.bin 写进U盘里，又有一个坑。
+如果你是Win 10，你会发现Format U盘时没有Fat32选项，只有exFat和NTFS，如果你用这两个format，刷ssh的时候你会看到路由器LED灯变红。
+所以你需要找一台Win7的电脑，或者下一个Fat32的format软件，不麻烦。
+Format U盘后，复制 miwifi_ssh.bin 到U盘，插进小米路由，把
