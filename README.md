@@ -290,6 +290,14 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 * Alias随便填
 * 其他必填的有server address, server port, connection timeout, password 和 encrypted method，根据你最早配置好的国内SS服务器，自行填入
 * 完成后点 Save and Apply
+另外：如果要开启 TCP Fast Open 选项，需要修改 sysctl.conf 添加一行net.ipv4.tcp_fastopen = 3，然后使之生效。命令如下
+```
+    echo "net.ipv4.tcp_fastopen = 3" >> /etc/sysctl.conf
+    sysctl -p
+```
+另外2：最好是设置一个域名，建立一个A record对应当前国内Shadowsocks服务器的IP，这样以后换服务器，只要改下A record即可
+不过目前openwrt里的luci版本客户端不支持hostname 作为server name，解决方法是写个脚本，来源如下
+https://github.com/shadowsocks/luci-app-shadowsocks/wiki/Auto-Update-Servers-IP
 
 然后回到General setting
 * Global Setting 不用改
