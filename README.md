@@ -217,8 +217,8 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 1. Advance setting里没东西要改
 1. Physical setting里，确保bridge interfaces没有选取（没有√），下一行interface选wlan0
 1. Firewall setting里套用系统预设的LAN（绿色）
-点击Apply and Save
-点 Network > Wireless,此时的Radio0应该是disable的状态，点edit配置ssid等，没什么特别需要注意的，mode确保是Access Point，network选取刚才建立的wireless-ap 那个interface,其他根据需求配置，配好后Apply and Save，并点击enable激活。
+1. 点击Apply and Save
+1. 点 Network > Wireless,此时的Radio0应该是disable的状态，点edit配置ssid等，没什么特别需要注意的，mode确保是Access Point，network选取刚才建立的wireless-ap 那个interface,其他根据需求配置，配好后Apply and Save，并点击enable激活。
 
 ### 在PC端连上新建的AP，输入192.168.3.1（或你自己另设的Wireless-AP那个interface的IP）
 
@@ -232,7 +232,7 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 1. Advance setting里没东西要改
 1. Physical setting里，确保bridge interfaces没有选取，下一行interface选etho0
 1. Firewall setting里套用系统预设的WAN（红色）
-点击Apply and Save
+1. 点击Apply and Save
 完成后重启路由
 
 到此为止，所有为Shadowsocks做的准备工作都已经完成，我们来回顾下整个方案的结构
