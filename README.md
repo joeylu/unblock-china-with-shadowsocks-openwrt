@@ -310,7 +310,29 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 * 点 Save and Apply
 
 SSH 进路由的命令界面
+在 /etc/ 里新建两个txt文件，我的叫 bp_list.txt 和 fw_list.txt，分别用于存储 忽略代理列表的IP和强制代理列表的IP
+用nano 或 vi打开 bp_list.txt
+目前，我们的目标是不代理任何IP地址，所以添加一条CIDR记录  0.0.0.0/24
+如果你有一些IP端是永久性需要代理的，因为之后强制代理的txt文件会自动擦除和更新，所以添加在忽略代理列表里更直观些，比方说111.111.111.0/24段需要永远代理，那么我们就生成一个1.0.0.0>111.111.110.255  110.111.112.0>255.255.255.255的CIDR记录，这样111.111.111.0/24就不会被忽略了
+https://www.ipaddressguide.com/cidr 这个工具可以进一步帮助你计算IP段
 
+下一步
+```
+    nano /etc/config/shadowsocks
+```
+在config access_control下添加一行
+```
+    option wan_bp_list '/etc/bp_list.txt'
+```
+保存后，回到浏览器openwrt管理界面，点service > shadowsocks，点access control，你会看到 bypass list栏出现了刚才添加的忽略列表文件
+到此为止，该设置的全部设置完成，目前shadowsocks的状态是
 
+### 已经连接到了国内服务器，并开始转发代理所有DNS，但不代理任何IP地址
+
+我们来做个测试确保shadowsocks工作
+
+* 在 Service > Shadowsocks，点access control
+* 在 Forwarded IP栏，填入 59.111.181.52
+* 点 Save and Apply
 
 
