@@ -320,7 +320,7 @@ https://github.com/shadowsocks/luci-app-shadowsocks/wiki/Auto-Update-Servers-IP
 SSH 进路由的命令界面
 在 /etc/ 里新建两个txt文件，我的叫 bp_list.txt 和 fw_list.txt，分别用于存储 忽略代理列表的IP和强制代理列表的IP
 用nano 或 vi打开 bp_list.txt
-目前，我们的目标是不代理任何IP地址，所以添加一条CIDR记录  0.0.0.0/24
+目前，我们的目标是不代理任何IP地址，但转发127.0.0.1的DNS请求，所以添加忽略记录CIDR的大致逻辑就是全部IP端，但除去127.0.0.0/24段
 如果你有一些IP端是永久性需要代理的，因为之后强制代理的txt文件会自动擦除和更新，所以添加在忽略代理列表里更直观些，比方说111.111.111.0/24段需要永远代理，那么我们就生成一个1.0.0.0>111.111.110.255  110.111.112.0>255.255.255.255的CIDR记录，这样111.111.111.0/24就不会被忽略了
 https://www.ipaddressguide.com/cidr 这个工具可以进一步帮助你计算IP段
 
