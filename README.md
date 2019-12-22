@@ -191,3 +191,48 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
     ifconfig wlan0 up #wlan0 也可能是其他名字，根据ip link list更改
 ```
 ### 保险起见，再重启下
+
+到此为止，如果使用小米路由mini的话，官方定制的openwrt路由包预设就已经把网络配置好，充其量在WAN端调整下pppoe还是dhcp，LAN端调整SSID或加密方式，连上小米路由mini应该已经能上网
+如果使用树莓派的话，还需要进一步的设置network，我的做法如下
+1. Network > Interfaces 点击 Add new interface
+1. 命名 Wireless-AP 选择刚安装好的wlan0作为网卡
+1. Protocol 选择 Static 
+1. submit
+1. Edit 新添加的interface，General setup里输入一个全新subnet的IP，我的是 192.168.3.1， subnet是255.255.255.0 其他保持原状不用填
+1. 底部确保 DHCP 是enabled，里面的设置很简单没什么需要注意
+1. Advance setting里没东西要改
+1. Physical setting里，确保bridge interfaces没有选取（没有√），下一行interface选wlan0
+1. Firewall setting里套用系统预设的LAN（绿色）
+点击Apply and Save
+点 Network > Wireless,此时的Radio0应该是disable的状态，点edit配置ssid等，没什么特别需要注意的，mode确保是Access Point，network选取刚才建立的wireless-ap 那个interface,其他根据需求配置，配好后Apply and Save，并点击enable激活。
+
+### 在PC端连上新建的AP，输入192.168.3.1（或你自己另设的Wireless-AP那个interface的IP）
+
+连上后，回到Interfaces主界面，此时应该有两个LAN，把之前那个etho0的LAN删除，这回我们要把树莓派的RJ45接口改成WAN口
+1. Network > Interfaces 点击 Add new interface
+1. 命名 WAN 并选择eth0作为网卡
+1. Protocol 选择static （也可以选dhcp，不过这样一来你的WAN口IP不好控制）
+1. submit
+1. Edit 新添加的interface WAN, General setup里，如果是dhcp就啥也不用改，如果是static，则输入主路由IP段的信息，gateway 和 dns填写主路由的IP地址
+1. 底部DHCP部分，勾选 ignore interface，WAN端不需要dhcp服务
+1. Advance setting里没东西要改
+1. Physical setting里，确保bridge interfaces没有选取，下一行interface选etho0
+1. Firewall setting里套用系统预设的WAN（红色）
+点击Apply and Save
+完成后重启路由
+
+到此为止，所有为Shadowsocks做的准备工作都已经完成，我们来回顾下整个方案的结构
+
+### 主路由 --->（通过网线）---->小米路由mini/树莓派 ----> 单独的一个Wifi SSID（假设叫做China_Gateway）
+### 之后的目标，是家里其他不需要长期连着假装在国内的设备，连主路由的wifi SSID，家里所有需要长期假装在国内的设备，比如各种国产TV盒子，各种小爱小度精灵啥的智能设备，连新路由China_Gateway
+### 我们接下去的工作也就是把China_Gateway这个路由，配置成一个用来骗过国内服务器检查是否在海外的透明代理
+
+## 配置Shadowsocks之前，我先说下我之前尝试其他解决方案遇到的各种情况
+* DNS污染，以爱奇艺为例，海外DNS解析爱奇艺的很多hostname，会被redirect到海外的服务器，此时即使你通过代理把IP地址装成国内的，也于事无补
+* 用来检测是否海外链接的hostname不稳定，常常会变，有时候变IP，有时候直接换了个hostname
+* 即使国内你有个大带宽的服务器，也无法做到全局代理或者全局转发VPN，原因是国内对国外的gateway常常堵塞
+
+因此我的整体架构思路如下
+* DNS全局转发代理，以防万一就不再做国内国外筛选，后遗症是连上该路由的设备，即使在国外，也连不上google了，不过开头已经提到，单连PC或手机的话，直接使用unblock youku或自己架设一个unblock youku的服务更有效
+* 通过tcpdump + wireshark，建立一套简易分析工具，每当有新的智能设备或服务需要假装在国内，就run一遍并把检查地域的host给找出来，加入代理列表
+* 开源这个列表，通过脚本的方式让路由器自动更新代理规则，最终达到使用openwrt img配置路由+自动更新，极简化这个代理路由的配置流程
