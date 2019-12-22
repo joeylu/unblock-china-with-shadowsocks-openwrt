@@ -163,6 +163,7 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
     opkg install iptables-mod-tproxy
     opkg install block-mount e2fsprogs kmod-fs-ext4 kmod-usb-ohci kmod-usb-storage kmod-usb2 kmod-usb3 
     opkg install usbutils
+    opkg install nano #习惯用vi的话可以不装nano
 ```
 树莓派的话也要安装一些wifi相关的组件
 ```
@@ -224,8 +225,8 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 到此为止，所有为Shadowsocks做的准备工作都已经完成，我们来回顾下整个方案的结构
 
 ### 主路由 --->（通过网线）---->小米路由mini/树莓派 ----> 单独的一个Wifi SSID（假设叫做China_Gateway）
-### 之后的目标，是家里其他不需要长期连着假装在国内的设备，连主路由的wifi SSID，家里所有需要长期假装在国内的设备，比如各种国产TV盒子，各种小爱小度精灵啥的智能设备，连新路由China_Gateway
-### 我们接下去的工作也就是把China_Gateway这个路由，配置成一个用来骗过国内服务器检查是否在海外的透明代理
+之后的目标，是家里其他不需要长期连着假装在国内的设备，连主路由的wifi SSID，家里所有需要长期假装在国内的设备，比如各种国产TV盒子，各种小爱小度精灵啥的智能设备，连新路由China_Gateway
+我们接下去的工作也就是把China_Gateway这个路由，配置成一个用来骗过国内服务器检查是否在海外的透明代理
 
 ## 配置Shadowsocks之前，我先说下我之前尝试其他解决方案遇到的各种情况
 * DNS污染，以爱奇艺为例，海外DNS解析爱奇艺的很多hostname，会被redirect到海外的服务器，此时即使你通过代理把IP地址装成国内的，也于事无补
@@ -236,3 +237,80 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 * DNS全局转发代理，以防万一就不再做国内国外筛选，后遗症是连上该路由的设备，即使在国外，也连不上google了，不过开头已经提到，单连PC或手机的话，直接使用unblock youku或自己架设一个unblock youku的服务更有效
 * 通过tcpdump + wireshark，建立一套简易分析工具，每当有新的智能设备或服务需要假装在国内，就run一遍并把检查地域的host给找出来，加入代理列表
 * 开源这个列表，通过脚本的方式让路由器自动更新代理规则，最终达到使用openwrt img配置路由+自动更新，极简化这个代理路由的配置流程
+
+### 预备工作
+配一个U盘方便扩展和Logging，插入小米路由mini或树莓派的USB接口上
+```
+    ls -al /dev/sd*
+```
+找到U盘的路径，比如说是 /dev/sda1
+```
+    mkfs.ext4 /dev/sda1
+    block detect | uci import fstab
+    uci set fstab.@mount[0].enabled='1' && uci set fstab.@global[0].check_fs='1' && uci commit
+    /sbin/block mount && service fstab enable
+```
+完成后登陆openwrt管理界面，在 system > mount points 里， mount point表里应该可以找到 \mnt\sda1
+
+接下来安装Shadowsocks客户端的环境
+首先请确保之前配置openwrt时的基础环境组件都已经安装好
+
+先获取自己设备的架构码
+```
+    opkg print-architecture | awk '{print $2}'
+```
+小米路由mini应该是mipsel_24kc
+树莓派2B应该是arm_cortex-a7_neon-vfpv4
+
+添加opkg key
+```
+    wget http://openwrt-dist.sourceforge.net/openwrt-dist.pub
+    opkg-key add openwrt-dist.pub
+```
+
+添加自定义源
+```
+    nano /etc/opkg/customfeeds.conf
+```
+在文件底部添加两行source链接,mipsel_24kc红色字段更改为之前获取的设备架构码
+```
+    src/gz openwrt_dist http://openwrt-dist.sourceforge.net/packages/base/<span style="color:red">s**mipsel_24kc** text</span>
+    src/gz openwrt_dist_luci http://openwrt-dist.sourceforge.net/packages/luci
+```
+安装shadowsock client
+```
+    opkg update
+    opkg install shadowsocks-libev
+    opkg install luci-app-shadowsocks
+```
+完成安装后，重新登录openwrt管理界面，在菜单那会多出一个Service，点击里面的Shadowsock
+
+首先点中间的Server Manage
+* 点Add新增一个服务器数据
+* Alias随便填
+* 其他必填的有server address, server port, connection timeout, password 和 encrypted method，根据你最早配置好的国内SS服务器，自行填入
+* 完成后点 Save and Apply
+
+然后回到General setting
+* Global Setting 不用改
+* Transparent Proxy中，Main server选你刚才添加的Server Alias，UDP relay 选同样的那个Alias，Local port随便填一个没用过的，MTU不改变
+* UDP Reply需要你的服务器的防火墙或ECS的安全组打开Shadowsocks端口的UDP，光打开TCP是不够的
+* Socket5 保持disable 状态
+* Port Forward中，Server选刚添加的Alias，port 5300不变，Destination是指转发后使用的国内DNS，因为做全局DNS代理，这里必须填一个国内的DNS，我填的是阿里的223.5.5.5:53，你也可以选一个你偏爱的，比如114.114.114.114:53
+* 以上地址中的53是DNS端口，必须填
+* 完成后点 Save and Apply
+
+最后那个Access Control目前没东西需要填，不过你可以点进去看看，大致概念是若强制代理有IP记录，则无论如何都会强制代理，Bypass里若有记录，同时该记录并没有出现在强制代理的记录里，则会在代理时忽略，根据整体方案的策略，预设应该是不代理任何地址，直到有强制代理的地址出现。相关这方面的设置我们会使用两个txt文件，之后会有详述。
+更详细的配置介绍，可以参考官方链接 https://github.com/shadowsocks/luci-app-shadowsocks/wiki/Use-UCI-system
+
+完成Shadowsocks的设置，去菜单的 Network > DHCP and DNS
+* 在General Setting里找 DNS forwardings，预设为空格，我们输入Shadowsocks的端口 127.0.0.1#5300
+* 点 Save and Apply
+* 再去 Resolv and Host files，找ignore resolv file 并打钩 （以后如果不想要DNS转发的话，就去掉勾，重新填入 /tmp/resolv.conf.auto）
+* 点 Save and Apply
+
+SSH 进路由的命令界面
+
+
+
+
