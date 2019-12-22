@@ -177,3 +177,17 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 ```
 
 ### 重启
+树莓派的话，输入
+```
+    lsusb
+```
+看看wifi usb卡是不是已经识别了
+```
+    ip link list
+```
+找到该wifi卡的名字，通常是wlan0
+最后启动该卡
+```
+    ifconfig wlan0 up #wlan0 也可能是其他名字，根据ip link list更改
+```
+### 保险起见，再重启下
