@@ -219,7 +219,6 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 1. Firewall setting里套用系统预设的LAN（绿色）
 1. 点击Apply and Save
 1. 点 Network > Wireless,此时的Radio0应该是disable的状态，点edit配置ssid等。小米路由的话没什么特别需要注意的，mode确保是Access Point，network选取刚才建立的wireless-ap 那个interface,其他根据需求配置，配好后Apply and Save，并点击enable激活。
-1. 设置wireless时，如果是树莓派4，会预设有一个client，那个需要删除，重新加一个master AP即可
 
 ### 在PC端连上新建的AP，输入192.168.3.1（或你自己另设的Wireless-AP那个interface的IP）
 
