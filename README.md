@@ -152,6 +152,7 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 
 ### <a name="openwrt_pi"></a>树莓派 （原生不支持openwrt，4和zero目前官网并不支持，不过安装方便，就是不知道我用的2B性能会不会有瓶颈）
 去官网下载固件 https://openwrt.org/toh/raspberry_pi_foundation/raspberry_pi
+[树莓派4非官方snapshot](https://openwrt.org/toh/hwdata/raspberry_pi_foundation/raspberry_pi_foundation_raspberry_pi_4_b)
 找installation那个表，对应自己树莓派的版本，下载后在你的PC端，用Win32DiskImager把img写到sd卡上，再把sd卡插入树莓派，把树莓派用网线连接到主路由，插入usb电源
 
 和小米路由最后一步差不多，当前固件预设状态不打开wifi和dhcp，且ip地址是固定写死的192.168.1.1
