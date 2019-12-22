@@ -342,5 +342,12 @@ https://www.ipaddressguide.com/cidr 这个工具可以进一步帮助你计算IP
 * 在 Service > Shadowsocks，点access control
 * 在 Forwarded IP栏，填入 59.111.181.52
 * 点 Save and Apply
+* 打开浏览器访问 http://ipservice.163.com/isFromMainland
 
+如果结果是true，删除59.111.181.52后返回false,那么恭喜，服务器设置完成，完美工作
 
+接下来我们就要开始最头痛的日志分析了
+
+## 设备日志分析 (tcpdump + wireshark)
+
+准备工作，安装tcpdump 和 wireshark，并确保winscp工作，U盘工作
