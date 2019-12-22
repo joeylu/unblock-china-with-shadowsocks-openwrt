@@ -365,56 +365,56 @@ https://www.ipaddressguide.com/cidr 这个工具可以进一步帮助你计算IP
 以小米盒子安装的爱奇艺APP为例，如果你在海外，点击电影，绝大多数的都不能看
 
 流程：
-    * 把小米盒子接到新装好的openwrt路由器wifi，我们假设盒子获得的IP地址是192.168.3.10
-    * 找一台pc也暂时连上openwrt路由器的wifi，SSH进入命令界面
-    * 使用tcpdump 可以学习下官网的一些配置 https://www.tcpdump.org/
-    * 在小米盒子上打开爱奇艺app，进入电影列表，选中一部电影（但不要打开该电影）
-    * 下面这段命令是获得来源于192.168.3.10当前http和https的请求，并保存在U盘上
-    ```
-        tcpdump src 192.168.3.10 and dst port http or dst port https -vvtttt -w /mnt/sda1/iqiyi.pcap
-    ```
-    * 执行上面的命令后，在小米盒子上打开之前选中的电影，知道出现“海外地区限制”的信息
-    * 此时可以看到tcpdump正在抓包，按Ctrl+C中断
-    * 在PC端下载wireshark 官网https://www.wireshark.org/
-    * 用winscp把路由器U盘上保存的iqiyi.pcap下载到pc
-    * 打开wireshark，点file > open 打开iqiyi.pcap
-    * 为了更清晰的现实，我们添加3个column
-        * 右键点击任意column的名字，选 column preference
-        * 点下面的+号，我这里添加了3个type：dest addr (unresolved)， destination port, custom，分别取名addr,port,server name，确认
-        * 右键点server name那个新添加的column，选edit column
-        * 在上方fields 输入 tls.handshake.extensions_server_name
-    * 在上方current field栏输入tls.handshake.extensions_server_name contains "qiyi" （差不多意思是仅仅显示含有qiyi字段的server name请求包）
-    * 出来一个简单列表，到此你可以把server name这个column里的所有url全部提取出来，或者对比unblock youku的官方[url.js](https://github.com/uku/Unblock-Youku/blob/master/shared/urls.js)做进一步对比。因为我们抱着尽可能代理越少的IP来节省流量和速度体验，所以目的是尽可能的获取仅仅用来检查海外地址的hostname请求，当然不在乎流量的话也可以不再进一步细致分析。
-    * 我获得了以下的这个列表
-    ```
-        pcw-api.iqiyi.com
-        static.iqiyi.com
-        stc.iqiyipic.com
-        cache.video.iqiyi.com
-        nl-rcd.iqiyi.com
-        iqiyi.irs01.com
-        t7z.cupid.iqiyi.com
-        t7z.cupid.iqiyi.com
-        data.video.iqiyi.com
-        data.video.iqiyi.com
-        stc.iqiyipic.com
-        search.video.iqiyi.com
-        www.iqiyipic.com
-    ```
-    * 根据unblock youku里相关iqiyi的列表，我人工添加了
-    ```        
-        "iface.iqiyi.com",
-        "iface2.iqiyi.com",
-        "iplocation.geo.qiyi.com",
-        "iplocation.geo.iqiyi.com"
-    ```
-    * 除了比对unblock youku官方列表，我也有时候会用tcpdump追踪53端口获得更进一步的请求数据做对比，命令如下
-    ```
-        tcpdump src 192.168.3.10 and dst port 53 -vvtttt
-    ```
-    * 最后，使用python脚本，import socket 并使用 gethostbyname_ex(url) 这个函数，gethostbyname_ex() 和 gethostbyname() 的区别是gethostbyname_ex() 返回的是该hostname指向的所有IP，而非只有一个。（这个脚本目前很粗糙，也没有写入服务端更新等功能，期待之后慢慢完善）     
-    * 执行脚本，获得所有IP列表，我目前的脚本是生成access control里的option wan_fw_ips的list，理论上应该直接生成fw_list.txt然后给option wan_fw_list代理，但路由器luci界面里forward list输入框有问题，暂时就先用list方法了
-    * 把生成的hostnames.txt里所有的行复制到 /etc/config/shadowsocks 里的 config access_control 里的list
-    * 保存并重启路由器
+* 把小米盒子接到新装好的openwrt路由器wifi，我们假设盒子获得的IP地址是192.168.3.10
+* 找一台pc也暂时连上openwrt路由器的wifi，SSH进入命令界面
+* 使用tcpdump 可以学习下官网的一些配置 https://www.tcpdump.org/
+* 在小米盒子上打开爱奇艺app，进入电影列表，选中一部电影（但不要打开该电影）
+* 下面这段命令是获得来源于192.168.3.10当前http和https的请求，并保存在U盘上
+```
+    tcpdump src 192.168.3.10 and dst port http or dst port https -vvtttt -w /mnt/sda1/iqiyi.pcap
+```
+* 执行上面的命令后，在小米盒子上打开之前选中的电影，知道出现“海外地区限制”的信息
+* 此时可以看到tcpdump正在抓包，按Ctrl+C中断
+* 在PC端下载wireshark 官网https://www.wireshark.org/
+* 用winscp把路由器U盘上保存的iqiyi.pcap下载到pc
+* 打开wireshark，点file > open 打开iqiyi.pcap
+* 为了更清晰的现实，我们添加3个column
+    * 右键点击任意column的名字，选 column preference
+    * 点下面的+号，我这里添加了3个type：dest addr (unresolved)， destination port, custom，分别取名addr,port,server name，确认
+    * 右键点server name那个新添加的column，选edit column
+    * 在上方fields 输入 tls.handshake.extensions_server_name
+* 在上方current field栏输入tls.handshake.extensions_server_name contains "qiyi" （差不多意思是仅仅显示含有qiyi字段的server name请求包）
+* 出来一个简单列表，到此你可以把server name这个column里的所有url全部提取出来，或者对比unblock youku的官方[url.js](https://github.com/uku/Unblock-Youku/blob/master/shared/urls.js)做进一步对比。因为我们抱着尽可能代理越少的IP来节省流量和速度体验，所以目的是尽可能的获取仅仅用来检查海外地址的hostname请求，当然不在乎流量的话也可以不再进一步细致分析。
+* 我获得了以下的这个列表
+```
+    pcw-api.iqiyi.com
+    static.iqiyi.com
+    stc.iqiyipic.com
+    cache.video.iqiyi.com
+    nl-rcd.iqiyi.com
+    iqiyi.irs01.com
+    t7z.cupid.iqiyi.com
+    t7z.cupid.iqiyi.com
+    data.video.iqiyi.com
+    data.video.iqiyi.com
+    stc.iqiyipic.com
+    search.video.iqiyi.com
+    www.iqiyipic.com
+```
+* 根据unblock youku里相关iqiyi的列表，我人工添加了
+```        
+    "iface.iqiyi.com",
+    "iface2.iqiyi.com",
+    "iplocation.geo.qiyi.com",
+    "iplocation.geo.iqiyi.com"
+```
+* 除了比对unblock youku官方列表，我也有时候会用tcpdump追踪53端口获得更进一步的请求数据做对比，命令如下
+```
+    tcpdump src 192.168.3.10 and dst port 53 -vvtttt
+```
+* 最后，使用python脚本，import socket 并使用 gethostbyname_ex(url) 这个函数，gethostbyname_ex() 和 gethostbyname() 的区别是gethostbyname_ex() 返回的是该hostname指向的所有IP，而非只有一个。（这个脚本目前很粗糙，也没有写入服务端更新等功能，期待之后慢慢完善）     
+* 执行脚本，获得所有IP列表，我目前的脚本是生成access control里的option wan_fw_ips的list，理论上应该直接生成fw_list.txt然后给option wan_fw_list代理，但路由器luci界面里forward list输入框有问题，暂时就先用list方法了
+* 把生成的hostnames.txt里所有的行复制到 /etc/config/shadowsocks 里的 config access_control 里的list
+* 保存并重启路由器
     
 顺利的话，之前的那部电影可以看了，当然，网速啥的就别太期待能达到4K的标准
