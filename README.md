@@ -8,14 +8,26 @@
 1. 仅仅在检查IP时使用Shadowsocks代理，播放视频流的时候则不走代理，以节省大量的带宽 
 1. 路由自动获取IP列表更新，基本做到随插即用
 
-## 前期准备
+* ### [前期准备](#prepare)
+* ### [刷Openwrt固件](#openwrt)
+    * ### [小米路由mini刷openwrt](#openwrt_mi)
+    * ### [树莓派2B刷openwrt](#openwrt_pi)
+* ### [Openwrt 初始设置](#config)
+* ### [安装shadowsocks](#shadowsocks)
+    * ### [基础环境配置](#ss_prepare)
+    * ### [路由管理界面配置](#ss_luci)
+    * ### [测试](#ss_test)
+* ### [tcpdump + wireshark 日志分析](#analyst)
+
+
+## <a name="prepare"></a>前期准备
 
 * 一个能刷Openwrt固件的系统 （我目前尝试了小米路由Mini和树莓派2B）
 * 一个U盘 （主要用于搜集监听数据和其他Log，路由器本身的内存太少）
 * 一个主路由 （Openwrt路由最终会全部使用国内DNS，为了能让家里那些使用国内资源的设备长期在线，不建议使用同一个路由）
 * 一台国内的Shadowsocks Server （我目前尝试了xx云的ECS和家里树莓派4）
 
-## 设置Shadowsocks Server
+## <a name="server_setup"></a>设置Shadowsocks Server
 
 总体来说这一步是最简单的，无脑操作，先把成就感拉出红线 ^^
 
@@ -83,7 +95,7 @@ https://github.com/shadowsocks/luci-app-shadowsocks/wiki/Bandwidth-of-encrypt-me
 https://shadowsocks.org/en/download/clients.html
 输入IP地址，端口，密码和加密方式，链接，通了的话就代表服务器正常运行了。
 
-## 刷Openwrt固件
+## <a name="openwrt"></a>刷Openwrt固件
 
 * putty 或类似ssh软件
 * winscp 传输档案用
@@ -94,7 +106,7 @@ https://shadowsocks.org/en/download/clients.html
 
 因为尝试了小米路由mini和树莓派2B，虽然基本上没太大区别，网上都搜得到，我还是分两个设备各自简要介绍下流程
 
-### 小米路由mini （算是原生支持openwrt，推荐，便宜而且方便，但不适合进一步折腾）
+### <a name="openwrt_mi"></a>小米路由mini （算是原生支持openwrt，推荐，便宜而且方便，但不适合进一步折腾）
 首先刷小米开发板固件（有坑）
 很多教程里都直接让你去官网下载开发板固件，其实有误，原因是这些教程都过期了，新的官方开发板固件里的ssh秘钥算法不匹配官网自己的ssh.bin，因此需要下载一个旧的开发板固件版本，我用的是0.436，据说0.8以内都可以，这里放一篇教程
 https://www.shuyz.com/posts/unhappy-experience-with-miwifi-mini-ssh-access/
@@ -138,7 +150,7 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 解决方法是通过网线，直连你的电脑，把电脑网卡设置为 192.168.0.x, 网关为192.168.0.1
 然后浏览器里输入192.168.0.1 若能打开openwrt的管理界面，刷固件搞定！
 
-### 树莓派 （原生不支持openwrt，4和zero目前官网并不支持，不过安装方便，就是不知道我用的2B性能会不会有瓶颈）
+### <a name="openwrt_pi"></a>树莓派 （原生不支持openwrt，4和zero目前官网并不支持，不过安装方便，就是不知道我用的2B性能会不会有瓶颈）
 去官网下载固件 https://openwrt.org/toh/raspberry_pi_foundation/raspberry_pi
 找installation那个表，对应自己树莓派的版本，下载后在你的PC端，用Win32DiskImager把img写到sd卡上，再把sd卡插入树莓派，把树莓派用网线连接到主路由，插入usb电源
 
@@ -147,7 +159,7 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 
 接上电源后，等一分钟，在浏览器上输入192.168.1.1，若能打开openwrt的管理界面，刷固件搞定！
 
-## 配置openwrt，安装shadowsocks客户端
+## <a name="config"></a>配置openwrt，安装shadowsocks客户端
 
 进入管理界面后先改密码
 然后菜单里点network > interface
@@ -228,7 +240,7 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 之后的目标，是家里其他不需要长期连着假装在国内的设备，连主路由的wifi SSID，家里所有需要长期假装在国内的设备，比如各种国产TV盒子，各种小爱小度精灵啥的智能设备，连新路由China_Gateway
 我们接下去的工作也就是把China_Gateway这个路由，配置成一个用来骗过国内服务器检查是否在海外的透明代理
 
-## 配置Shadowsocks之前，我先说下我之前尝试其他解决方案遇到的各种情况
+## <a name="shadowsocks"></a>配置Shadowsocks之前，我先说下我之前尝试其他解决方案遇到的各种情况
 * DNS污染，以爱奇艺为例，海外DNS解析爱奇艺的很多hostname，会被redirect到海外的服务器，此时即使你通过代理把IP地址装成国内的，也于事无补
 * 用来检测是否海外链接的hostname不稳定，常常会变，有时候变IP，有时候直接换了个hostname
 * 即使国内你有个大带宽的服务器，也无法做到全局代理或者全局转发VPN，原因是国内对国外的gateway常常堵塞
@@ -238,7 +250,7 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
 * 通过tcpdump + wireshark，建立一套简易分析工具，每当有新的智能设备或服务需要假装在国内，就run一遍并把检查地域的host给找出来，加入代理列表
 * 开源这个列表，通过脚本的方式让路由器自动更新代理规则，最终达到使用openwrt img配置路由+自动更新，极简化这个代理路由的配置流程
 
-### 预备工作
+### <a name="ss_prepare"></a>预备工作
 配一个U盘方便扩展和Logging，插入小米路由mini或树莓派的USB接口上
 ```
     ls -al /dev/sd*
@@ -283,6 +295,8 @@ https://downloads.openwrt.org/releases/18.06.5/targets/ramips/mt7620/openwrt-18.
     opkg install shadowsocks-libev
     opkg install luci-app-shadowsocks
 ```
+
+### <a name="ss_luci"></a>管理界面配置
 完成安装后，重新登录openwrt管理界面，在菜单那会多出一个Service，点击里面的Shadowsock
 
 首先点中间的Server Manage
@@ -335,7 +349,7 @@ https://www.ipaddressguide.com/cidr 这个工具可以进一步帮助你计算IP
 保存后，回到浏览器openwrt管理界面，点service > shadowsocks，点access control，你会看到 bypass list栏出现了刚才添加的忽略列表文件
 到此为止，该设置的全部设置完成，目前shadowsocks的状态是
 
-### 已经连接到了国内服务器，并开始转发代理所有DNS，但不代理任何IP地址
+### <a name="ss_test"></a>已经连接到了国内服务器，并开始转发代理所有DNS，但不代理任何IP地址
 
 我们来做个测试确保shadowsocks工作
 
@@ -348,7 +362,7 @@ https://www.ipaddressguide.com/cidr 这个工具可以进一步帮助你计算IP
 
 接下来我们就要开始最头痛的日志分析了
 
-## 设备日志分析 (tcpdump + wireshark)
+## <a name="analyst"></a>设备日志分析 (tcpdump + wireshark)
 
 准备工作，安装tcpdump 和 wireshark，并确保winscp工作，U盘工作
 参考文档：[unblock youku 官方过滤文件](https://github.com/uku/Unblock-Youku/blob/master/shared/urls.js)
