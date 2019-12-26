@@ -397,8 +397,8 @@ https://www.ipaddressguide.com/cidr 这个工具可以进一步帮助你计算IP
     * 右键点击任意column的名字，选 column preference
     * 点下面的+号，我这里添加了3个type：dest addr (unresolved)， destination port, custom，分别取名addr,port,server name，确认
     * 右键点server name那个新添加的column，选edit column
-    * 在上方fields 输入 tls.handshake.extensions_server_name
-* 在上方current field栏输入tls.handshake.extensions_server_name contains "qiyi" （差不多意思是仅仅显示含有qiyi字段的server name请求包）
+    * 在上方fields 输入 tls.handshake.extensions_server_name or http.host
+* 在上方current field栏输入tls.handshake.extensions_server_name or http.host contains "qiyi" （差不多意思是仅仅显示含有qiyi字段的server name请求包）
 * 出来一个简单列表，到此你可以把server name这个column里的所有url全部提取出来，或者对比unblock youku的官方[url.js](https://github.com/uku/Unblock-Youku/blob/master/shared/urls.js)做进一步对比。因为我们抱着尽可能代理越少的IP来节省流量和速度体验，所以目的是尽可能的获取仅仅用来检查海外地址的hostname请求，当然不在乎流量的话也可以不再进一步细致分析。
 * 我获得了以下的这个列表
 ```
