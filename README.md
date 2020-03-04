@@ -38,7 +38,7 @@
 ```
     sudo apt-get update
     sudo apt-get install python3-pip
-    sudo pip install shadowsocks    
+    sudo pip3 install shadowsocks    
     nano /etc/shadowsocks.json
 ```
 写一个配置的json文档
