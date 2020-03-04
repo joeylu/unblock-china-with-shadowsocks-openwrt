@@ -39,7 +39,7 @@
     sudo apt-get update
     sudo apt-get install python3-pip
     sudo pip3 install shadowsocks    
-    nano /etc/shadowsocks.json
+    sudo nano /etc/shadowsocks.json
 ```
 写一个配置的json文档
 ```
@@ -74,9 +74,9 @@ https://github.com/shadowsocks/luci-app-shadowsocks/wiki/Bandwidth-of-encrypt-me
 ```
 服务器重启后自动启动
 ```
-    nano /etc/rc.local
+    sudo nano /etc/rc.local
 ```
-添加以下命令
+添加以下命令, 在 exit 0 这一行之前
 ```
     /usr/bin/python /usr/local/bin/ssserver -c /etc/shadowsocks.json -d start
 ```
