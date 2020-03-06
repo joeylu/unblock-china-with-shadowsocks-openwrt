@@ -44,7 +44,7 @@
 写一个配置的json文档
 ```
     {
-       "server":"服务器公共IP",
+       "server":"服务器公共IP",  //如果是内网配置，比如AWS的EC2，或者公网的IP经常换，直接配置公网IP会有ErrNO 99出现，改成0.0.0.0 即可
        "server_port":8888,
        "local_port":3333,
        "password":"密码",
